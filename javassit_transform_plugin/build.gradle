@@ -1,0 +1,82 @@
+buildscript {
+    ext.kotlin_version = '1.3.31'
+    ext.gradle_version = '3.5.3'
+    repositories {
+        google()
+        jcenter()
+        //新加
+        maven {
+            url "file://${rootDir.absolutePath}/repo"
+        }
+        maven {
+            url "file://../repo"
+        }
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.android.tools.build:gradle:$gradle_version"
+    }
+}
+//plugin需要放在buildscript的下面 并且只能是紧接着下面 中间不能穿插其他
+plugins {
+    id 'java-gradle-plugin'
+    id 'kotlin'
+    id 'maven'
+}
+
+gradlePlugin {
+    plugins {
+        create("JavassitTransform") {
+            //插件id,用于引用插件,如：apply plugin: 'id'
+            id = "com.example.JavassitTransform"
+            //指定插件的实现类
+            implementationClass = "com.example.javassit_transform_plugin.launch.CostPlugin"
+        }
+
+    }
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            pom.groupId = 'com.example.JavassitTransform'
+            pom.artifactId = 'JavassitTransform'
+            pom.version = '1.0.0'
+            //上传到本地
+            repository(url: uri('../repo'))
+        }
+    }
+}
+
+
+
+
+
+repositories {
+    google()
+    jcenter()
+}
+
+dependencies {
+    //gradle sdk
+    implementation gradleApi()
+    //groovy sdk
+    implementation localGroovy()
+
+//    implementation project(':cost_annotation')
+
+
+    //transform api 这里的版本要跟工程的版本一致或者更低即（ classpath 'com.android.tools.build:gradle:3.5.0'）
+    implementation 'com.android.tools.build:gradle:3.5.0'
+    //处理io操作
+    implementation 'commons-io:commons-io:2.5'
+    implementation 'javassist:javassist:3.12.1.GA'
+
+    implementation 'com.example.cost_annotation:CostAnnotation:1.0.0@aar'
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+// Android gradle plugin will allow us to access Android specific features
+    implementation "com.android.tools.build:gradle:$gradle_version"
+}

@@ -1,0 +1,4 @@
+include ':cost_annotation'
+include ':javassit_transform_plugin'
+include ':app'
+rootProject.name = "ByteCodeInstrumentation"
