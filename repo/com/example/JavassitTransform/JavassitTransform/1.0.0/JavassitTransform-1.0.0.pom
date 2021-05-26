@@ -12,9 +12,15 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>javassist</groupId>
+      <groupId>org.javassist</groupId>
       <artifactId>javassist</artifactId>
-      <version>3.12.1.GA</version>
+      <version>3.26.0-GA</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.example.cost_annotation</groupId>
+      <artifactId>CostAnnotation</artifactId>
+      <version>1.0.0</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>

@@ -1,0 +1,61 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.example.cost_annotation",
+    "module": "CostAnnotation",
+    "version": "1.0.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "6.5",
+      "buildId": "hvwymgovr5gxdkuz3pm652efdq"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 7,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "CostAnnotation-1.0.0.jar",
+          "url": "CostAnnotation-1.0.0.jar",
+          "size": 984,
+          "sha512": "0955a43624a82b130fda5401abe2e7975390f9267eb6d6c4ae771f3e7de59dfd18caf4c0ea8f222ffac95b5dbc01d510ebd943249faeec9d6081ae477ec0d9d8",
+          "sha256": "8a0048c18923a89cc7af048c76ab2869e092970de6d205aea3111e6f2c980a31",
+          "sha1": "e3af6ab68451cfff07b37e739a1fe6f306c4b26e",
+          "md5": "31c908bdd5260777066aa7ab90cecb6f"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 7,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "CostAnnotation-1.0.0.jar",
+          "url": "CostAnnotation-1.0.0.jar",
+          "size": 984,
+          "sha512": "0955a43624a82b130fda5401abe2e7975390f9267eb6d6c4ae771f3e7de59dfd18caf4c0ea8f222ffac95b5dbc01d510ebd943249faeec9d6081ae477ec0d9d8",
+          "sha256": "8a0048c18923a89cc7af048c76ab2869e092970de6d205aea3111e6f2c980a31",
+          "sha1": "e3af6ab68451cfff07b37e739a1fe6f306c4b26e",
+          "md5": "31c908bdd5260777066aa7ab90cecb6f"
+        }
+      ]
+    }
+  ]
+}
