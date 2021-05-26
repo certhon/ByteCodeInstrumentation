@@ -67,7 +67,7 @@ android {
 
 dependencies {
 
-    implementation 'org.javassist:javassist:3.26.0-GA'
+    implementation 'javassist:javassist:3.12.1.GA'
 //    implementation project(':cost_annotation')
     implementation 'com.example.cost_annotation:CostAnnotation:1.0.0'
 

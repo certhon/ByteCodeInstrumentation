@@ -23,40 +23,62 @@ class InjectUtil {
 
 
     static void injectCost(File baseClassPath, Project project) throws NotFoundException {
-        System.out.println("baseClassPath getPath "+baseClassPath.getAbsolutePath());
-        System.out.println("baseClassPath getName "+baseClassPath.getName());
+        System.out.println("baseClassPath getPath " + baseClassPath.getAbsolutePath());
+        System.out.println("baseClassPath getName " + baseClassPath.getName());
         //把类路径添加到classpool
         try {
-            System.out.println("把类路径添加到classpool :"+baseClassPath.getPath());
+            System.out.println("把类路径添加到classpool :" + baseClassPath.getPath());
             sClassPool.appendClassPath(baseClassPath.getPath());
+            sClassPool.appendClassPath(baseClassPath.getAbsolutePath());
         } catch (NotFoundException e) {
             e.printStackTrace();
         }
         //添加Android相关的类
         AppExtension android = project.getExtensions().getByType(AppExtension.class);
         sClassPool.appendClassPath((android.getBootClasspath()).get(0).toString());
-        System.out.println("android.getBootClasspath() :"+android.getBootClasspath().toString());
+        System.out.println("安卓路径 android.getBootClasspath() :" + android.getBootClasspath().toString());
+        traverseFile(baseClassPath, baseClassPath);
+//        if (baseClassPath.isDirectory()) {
+//            //遍历文件获取类
+//            System.out.println("baseClassPath.isDirectory() :");
+//
+//            File[] fs = baseClassPath.listFiles();	//遍历path下的文件和目录，放在File数组中
+//            for(File f:fs){					//遍历File[]数组
+//                System.out.println("遍历filepath  :"+f.getName());
+//
+//                if (check(f)) {
+//                    System.out.println("find class : ${classFile.path}"+f.getPath());
+//                    String className = convertClass(baseClassPath.getPath(), f.getPath());
+//                    System.out.println("className : ${className}  "+className);
+//                    inject(baseClassPath.getPath(),className);
+//                }
+//        }
 
-        if (baseClassPath.isDirectory()) {
-            //遍历文件获取类
-            System.out.println("baseClassPath.isDirectory() :");
+    }
 
-            File[] fs = baseClassPath.listFiles();	//遍历path下的文件和目录，放在File数组中
-            for(File f:fs){					//遍历File[]数组
-                System.out.println("遍历filepath  :"+f.getName());
+    private static void traverseFile(File baseClassPath, File file) throws NotFoundException {
+        File[] fs = file.listFiles();
+        for (File f : fs) {
+            if (f.isDirectory()) {    //若是目录，则递归
+                System.out.println("文件夹 继续遍历  :" + f.getName());
+
+                traverseFile(baseClassPath, f);
+            } else if (f.isFile()) {
+                System.out.println("遍历filepath  :" + f.getName());
 
                 if (check(f)) {
-                    System.out.println("find class : ${classFile.path}"+f.getPath());
+                    System.out.println("find class : ${classFile.path}" + f.getPath());
                     String className = convertClass(baseClassPath.getPath(), f.getPath());
-                    System.out.println("className : ${className}  "+className);
-                    inject(baseClassPath.getPath(),className);
+                    System.out.println("className : ${className}  " + className);
+                    inject(file.getPath(), className);
                 }
+            }
         }
-
-    }}
+    }
 
     /**
      * 向目标类注入耗时计算代码,生成同名的代理方法，在代理方法中调用原方法计算耗时
+     *
      * @param baseClassPath 写回原路径
      * @param clazz
      */
@@ -73,13 +95,13 @@ class InjectUtil {
         }
         for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
             if (ctMethod.hasAnnotation(MethodCost.class)) {
-                System.out.println( "before ${ctMethod.name}"+ctMethod.getName());
+                System.out.println("before ${ctMethod.name}" + ctMethod.getName());
                 //把原方法改名，生成一个同名的代理方法，添加耗时计算
                 String name = ctMethod.getName();
                 String newName = name + COST_SUFFIX;
-                System.out.println( "after ${newName}"+newName);
+                System.out.println("after ${newName}" + newName);
                 String body = generateBody(ctClass, ctMethod, newName);
-                System.out.println( "generateBody : ${body}"+body);
+                System.out.println("generateBody : ${body}" + body);
                 //原方法改名
                 ctMethod.setName(newName);
                 //生成代理方法
@@ -108,6 +130,7 @@ class InjectUtil {
 
     /**
      * 生成代理方法体，包含原方法的调用和耗时打印
+     *
      * @param ctClass
      * @param ctMethod
      * @param newName
@@ -115,13 +138,13 @@ class InjectUtil {
      */
     private static String generateBody(CtClass ctClass, CtMethod ctMethod, String newName) throws NotFoundException {
         //方法返回类型
-            String returnType = ctMethod.getReturnType().getName();
+        String returnType = ctMethod.getReturnType().getName();
         System.out.println(returnType);
         //生产的方法返回值
         String methodResult = "${newName}($$);";
-        if (!"void".equals(returnType)){
+        if (!"void".equals(returnType)) {
             //处理返回值
-            methodResult = "${returnType} result = "+ methodResult;
+            methodResult = "${returnType} result = " + methodResult;
         }
         System.out.println(methodResult);
         return "{long costStartTime = System.currentTimeMillis();" +
@@ -147,13 +170,13 @@ class InjectUtil {
     //过滤掉一些生成的类
     private static boolean check(File file) {
         if (file.isDirectory()) {
-            System.out.println("文件夹跳过   :"+file.getName());
+            System.out.println("文件夹跳过   :" + file.getName());
 
             return false;
         }
 
-        String  filePath = file.getPath();
-        System.out.println("文件名字   :"+file.getName());
+        String filePath = file.getPath();
+        System.out.println("文件名字   :" + file.getName());
 
         return !filePath.contains("R$") &&
                 !filePath.contains("R.class") &&
