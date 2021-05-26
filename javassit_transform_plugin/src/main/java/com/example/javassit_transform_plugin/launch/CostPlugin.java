@@ -13,10 +13,12 @@ import org.gradle.api.Project;
 class CostPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
+        System.out.println("CostPlugin开始执行");
        AppExtension android =  project.getExtensions().getByType(AppExtension.class);
         //创建cost extension
         project.getExtensions().create(CostExtension.EXTENSION_NAME,  CostExtension.class);
         //注册transform
         android.registerTransform(new ClassTransform(project));
+        System.out.println("CostPlugin开始结束");
     }
 }

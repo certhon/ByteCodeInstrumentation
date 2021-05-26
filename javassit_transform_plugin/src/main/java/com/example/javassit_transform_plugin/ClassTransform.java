@@ -33,7 +33,7 @@ public class ClassTransform extends Transform {
 
     public ClassTransform(Project project) {
         mProject = project;
-
+        System.out.println("ClassTransform 创建");
     }
 
     @Override
@@ -44,11 +44,15 @@ public class ClassTransform extends Transform {
     //输入类型，这里只处理class文件
     @Override
     public Set<QualifiedContent.ContentType> getInputTypes() {
+        System.out.println("getInputTypes 创建");
+
         return TransformManager.CONTENT_CLASS;
     }
 
     @Override
     public Set<? super QualifiedContent.Scope> getScopes() {
+        System.out.println("getScopes 创建");
+
         return TransformManager.SCOPE_FULL_PROJECT;
     }
 
@@ -62,8 +66,9 @@ public class ClassTransform extends Transform {
         super.transform(transformInvocation);
         System.out.println("---- transform start ----");
         inject = CostExtension.checkInject(mProject);
-        System.out.println("injectCost = ${inject}");
+        System.out.println("injectCost = "+inject);
         Iterator<TransformInput> iterator = transformInvocation.getInputs().iterator();
+        System.out.println("文件数量 = "+transformInvocation.getInputs().size());
 
         // 输出集合中的所有元素
         while (iterator.hasNext()) {
@@ -71,6 +76,7 @@ public class ClassTransform extends Transform {
             Iterator<DirectoryInput> directoryInputIterator = input.getDirectoryInputs().iterator();
             while (directoryInputIterator.hasNext()) {
                 DirectoryInput directoryInput = directoryInputIterator.next();
+                System.out.println("输入文件名 = "+directoryInput.getName());
                 if (inject) {
                     try {
                         InjectUtil.injectCost(directoryInput.getFile(), mProject);

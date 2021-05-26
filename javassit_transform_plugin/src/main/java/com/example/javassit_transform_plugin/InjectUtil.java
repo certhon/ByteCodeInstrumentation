@@ -1,7 +1,7 @@
 package com.example.javassit_transform_plugin;
 
 import com.android.build.gradle.AppExtension;
-//import com.example.costannotation.MethodCost;
+import com.example.costannotation.MethodCost;
 
 import org.gradle.api.Project;
 
@@ -23,9 +23,11 @@ class InjectUtil {
 
 
     static void injectCost(File baseClassPath, Project project) throws NotFoundException {
-        System.out.println("injectUtil ${baseClassPath.path}");
+        System.out.println("baseClassPath getPath "+baseClassPath.getAbsolutePath());
+        System.out.println("baseClassPath getName "+baseClassPath.getName());
         //把类路径添加到classpool
         try {
+            System.out.println("把类路径添加到classpool :"+baseClassPath.getPath());
             sClassPool.appendClassPath(baseClassPath.getPath());
         } catch (NotFoundException e) {
             e.printStackTrace();
@@ -33,15 +35,20 @@ class InjectUtil {
         //添加Android相关的类
         AppExtension android = project.getExtensions().getByType(AppExtension.class);
         sClassPool.appendClassPath((android.getBootClasspath()).get(0).toString());
+        System.out.println("android.getBootClasspath() :"+android.getBootClasspath().toString());
+
         if (baseClassPath.isDirectory()) {
             //遍历文件获取类
+            System.out.println("baseClassPath.isDirectory() :");
+
             File[] fs = baseClassPath.listFiles();	//遍历path下的文件和目录，放在File数组中
             for(File f:fs){					//遍历File[]数组
+                System.out.println("遍历filepath  :"+f.getName());
 
                 if (check(f)) {
-                    System.out.println("find class : ${classFile.path}");
+                    System.out.println("find class : ${classFile.path}"+f.getPath());
                     String className = convertClass(baseClassPath.getPath(), f.getPath());
-                    System.out.println("className : ${className}");
+                    System.out.println("className : ${className}  "+className);
                     inject(baseClassPath.getPath(),className);
                 }
         }
@@ -66,13 +73,13 @@ class InjectUtil {
         }
         for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
             if (ctMethod.hasAnnotation(MethodCost.class)) {
-                System.out.println( "before ${ctMethod.name}");
+                System.out.println( "before ${ctMethod.name}"+ctMethod.getName());
                 //把原方法改名，生成一个同名的代理方法，添加耗时计算
                 String name = ctMethod.getName();
                 String newName = name + COST_SUFFIX;
-                System.out.println( "after ${newName}");
+                System.out.println( "after ${newName}"+newName);
                 String body = generateBody(ctClass, ctMethod, newName);
-                System.out.println( "generateBody : ${body}");
+                System.out.println( "generateBody : ${body}"+body);
                 //原方法改名
                 ctMethod.setName(newName);
                 //生成代理方法
@@ -140,10 +147,13 @@ class InjectUtil {
     //过滤掉一些生成的类
     private static boolean check(File file) {
         if (file.isDirectory()) {
+            System.out.println("文件夹跳过   :"+file.getName());
+
             return false;
         }
 
         String  filePath = file.getPath();
+        System.out.println("文件名字   :"+file.getName());
 
         return !filePath.contains("R$") &&
                 !filePath.contains("R.class") &&

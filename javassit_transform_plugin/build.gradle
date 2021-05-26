@@ -11,6 +11,9 @@ buildscript {
         maven {
             url "file://../repo"
         }
+        maven {
+            url uri('../repos')
+        }
     }
 
     dependencies {
@@ -73,7 +76,7 @@ dependencies {
     implementation 'commons-io:commons-io:2.5'
     implementation 'javassist:javassist:3.12.1.GA'
 
-    implementation 'com.example.cost_annotation:CostAnnotation:1.0.0@aar'
+    implementation 'com.example.cost_annotation:CostAnnotation:1.0.0'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 

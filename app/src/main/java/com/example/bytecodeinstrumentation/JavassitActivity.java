@@ -6,6 +6,8 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.costannotation.MethodCost;
+
 public class JavassitActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -20,35 +22,12 @@ public class JavassitActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
-
             }
         });
-
     }
-
+    @MethodCost
     public  void hello() throws Exception{
+        new Test().test();
 
-        Class<?> aClass = Class.forName("com.example.bytecodeinstrumentation.Test");
-        Test hello = (Test) aClass.newInstance();
-        hello.test();
-
-
-//        ClassPool cp = ClassPool.getDefault();
-//        //获取要修改的类
-//        CtClass cc = cp.get("com.example.bytecodeinstrumentation.Test");
-//        //获取要修改的方法
-//        CtMethod m = cc.getDeclaredMethod("test");
-//        //定义局部变量
-//        m.addLocalVariable("time",CtClass.longType);
-//        m.insertBefore("time = System.currentTimeMillis();");
-//        //在sayHi方法结束前插入代码
-//        m.insertAfter("time =  System.currentTimeMillis() - time;System.out.println(\"耗时：\"+time+\"毫秒\");");
-//        //保存.class文件
-//        cc.writeFile();
-//        //测试调用
-//        Class c = cc.toClass();
-//        Test hello = (Test) c.newInstance();
-//        hello.test();
     }
 }

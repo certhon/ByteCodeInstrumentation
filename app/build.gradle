@@ -8,6 +8,10 @@ buildscript {
         maven {
             url "file://../repo"
         }
+
+        maven {
+            url uri('../repos')
+        }
         google()
         jcenter()
 
@@ -29,6 +33,9 @@ plugins {
 }
 
 apply plugin: 'com.example.JavassitTransform'
+cost{
+    injectCost = true
+}
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
@@ -62,7 +69,7 @@ dependencies {
 
     implementation 'org.javassist:javassist:3.26.0-GA'
 //    implementation project(':cost_annotation')
-    implementation 'com.example.cost_annotation:CostAnnotation:1.0.0@aar'
+    implementation 'com.example.cost_annotation:CostAnnotation:1.0.0'
 
 
 

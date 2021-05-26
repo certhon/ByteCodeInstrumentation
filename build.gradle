@@ -24,6 +24,9 @@ allprojects {
         maven {
             url "file://../repo"
         }
+        maven {
+            url uri('../repos')
+        }
     }
 }
 
