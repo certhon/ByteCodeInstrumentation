@@ -74,8 +74,7 @@ dependencies {
     implementation 'com.android.tools.build:gradle:3.5.0'
     //处理io操作
     implementation 'commons-io:commons-io:2.5'
-    implementation 'javassist:javassist:3.12.1.GA'
-
+    implementation 'org.javassist:javassist:3.26.0-GA'
     implementation 'com.example.cost_annotation:CostAnnotation:1.0.0'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

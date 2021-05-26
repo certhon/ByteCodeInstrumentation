@@ -19,6 +19,7 @@ class CostPlugin implements Plugin<Project> {
         project.getExtensions().create(CostExtension.EXTENSION_NAME,  CostExtension.class);
         //注册transform
         android.registerTransform(new ClassTransform(project));
+//        android.registerTransform(new MyClassTransform(project));
         System.out.println("CostPlugin开始结束");
     }
 }

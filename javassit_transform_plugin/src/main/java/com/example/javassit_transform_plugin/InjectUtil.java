@@ -12,7 +12,6 @@ import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
-import javassist.CtNewMethod;
 import javassist.NotFoundException;
 
 class InjectUtil {
@@ -22,7 +21,7 @@ class InjectUtil {
     static final ClassPool sClassPool = ClassPool.getDefault();
 
 
-    static void injectCost(File baseClassPath, Project project) throws NotFoundException {
+    static void injectCost(File baseClassPath, Project project) throws NotFoundException, CannotCompileException {
         System.out.println("baseClassPath getPath " + baseClassPath.getAbsolutePath());
         System.out.println("baseClassPath getName " + baseClassPath.getName());
         //把类路径添加到classpool
@@ -35,8 +34,8 @@ class InjectUtil {
         }
         //添加Android相关的类
         AppExtension android = project.getExtensions().getByType(AppExtension.class);
-        sClassPool.appendClassPath((android.getBootClasspath()).get(0).toString());
-        System.out.println("安卓路径 android.getBootClasspath() :" + android.getBootClasspath().toString());
+//        sClassPool.appendClassPath((android.getBootClasspath()).get(0).toString());
+//        System.out.println("安卓路径 android.getBootClasspath() :" + android.getBootClasspath().toString());
         traverseFile(baseClassPath, baseClassPath);
 //        if (baseClassPath.isDirectory()) {
 //            //遍历文件获取类
@@ -56,10 +55,15 @@ class InjectUtil {
 
     }
 
-    private static void traverseFile(File baseClassPath, File file) throws NotFoundException {
+    private static void traverseFile(File baseClassPath, File file) throws NotFoundException, CannotCompileException {
         File[] fs = file.listFiles();
         for (File f : fs) {
             if (f.isDirectory()) {    //若是目录，则递归
+                if (f.getName().contains("META-INF")) {
+                    System.out.println("文件夹 META-INF 跳过  :" + f.getName());
+
+                    continue;
+                }
                 System.out.println("文件夹 继续遍历  :" + f.getName());
 
                 traverseFile(baseClassPath, f);
@@ -67,9 +71,13 @@ class InjectUtil {
                 System.out.println("遍历filepath  :" + f.getName());
 
                 if (check(f)) {
-                    System.out.println("find class : ${classFile.path}" + f.getPath());
+//                    System.out.println("find class : ${classFile.path}" + f.getPath());
+                    //把.class去掉  然后把\替换成.
                     String className = convertClass(baseClassPath.getPath(), f.getPath());
+
                     System.out.println("className : ${className}  " + className);
+
+                    //代码插入
                     inject(file.getPath(), className);
                 }
             }
@@ -82,10 +90,12 @@ class InjectUtil {
      * @param baseClassPath 写回原路径
      * @param clazz
      */
-    private static void inject(String baseClassPath, String clazz) throws NotFoundException {
+    private static void inject(String baseClassPath, String clazz) throws NotFoundException, CannotCompileException {
         CtClass ctClass = null;
         try {
             ctClass = sClassPool.get(clazz);
+//            System.out.println("准备注入代码" + ctClass.getName());
+
         } catch (NotFoundException e) {
             e.printStackTrace();
         }
@@ -94,37 +104,34 @@ class InjectUtil {
             ctClass.defrost();
         }
         for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
-            if (ctMethod.hasAnnotation(MethodCost.class)) {
-                System.out.println("before ${ctMethod.name}" + ctMethod.getName());
-                //把原方法改名，生成一个同名的代理方法，添加耗时计算
-                String name = ctMethod.getName();
-                String newName = name + COST_SUFFIX;
-                System.out.println("after ${newName}" + newName);
-                String body = generateBody(ctClass, ctMethod, newName);
-                System.out.println("generateBody : ${body}" + body);
-                //原方法改名
-                ctMethod.setName(newName);
-                //生成代理方法
-                try {
-                    CtMethod make = CtNewMethod.make(ctMethod.getModifiers(), ctMethod.getReturnType(), name, ctMethod.getParameterTypes(), ctMethod.getExceptionTypes(), body, ctClass);
-                    //把代理方法添加进来
-                    ctClass.addMethod(make);
-                } catch (CannotCompileException e) {
-                    e.printStackTrace();
-                } catch (NotFoundException e) {
-                    e.printStackTrace();
-                }
+            //找到声明了MethodCost注解的方法
 
+            if (ctMethod.hasAnnotation(MethodCost.class)) {
+                System.out.println("准备注入代码" + ctClass.getName());
+
+                //生成一个本地变量 long类型 名字为 start  即 long start
+                ctMethod.addLocalVariable("start", CtClass.longType);
+
+                //在方法前面给start赋值为当前时间
+                ctMethod.insertBefore("{start = System.currentTimeMillis();}");
+
+                String end = "System.out.println(\"" + ctClass.getName() + "类的\"" + "\"" + ctMethod.getName() + "方法useTime=\" +(System.currentTimeMillis()-start));";
+                System.out.println(end);
+                //在方法结尾 计算时间差 并打印 处理
+                ctMethod.insertAfter(end);
             }
         }
-
         try {
+            //保存class
             ctClass.writeFile(baseClassPath);
+            System.out.println("writeFile success");
         } catch (CannotCompileException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("detach ctClass");
+
         ctClass.detach();//释放
     }
 
@@ -158,17 +165,27 @@ class InjectUtil {
 
     private static String convertClass(String baseClassPath, String classPath) {
         //截取包之后的路径
+        System.out.println("classPath   :" + classPath);
+
         String packagePath = classPath.substring(baseClassPath.length() + 1);
         //把 / 替换成.
         String clazz = packagePath.replaceAll("/", ".");
         //去掉.class 扩展名
 
-        return clazz.substring(0, packagePath.length() - ".class".length());
+        String substring = clazz.substring(0, packagePath.length() - ".class".length());
+        System.out.println("convertClass   :" + substring);
+
+        return substring;
     }
 
 
     //过滤掉一些生成的类
     private static boolean check(File file) {
+        if (file.getName().contains("META-INF")) {
+            System.out.println("META-INF跳过   :" + file.getName());
+
+            return false;
+        }
         if (file.isDirectory()) {
             System.out.println("文件夹跳过   :" + file.getName());
 
@@ -176,7 +193,7 @@ class InjectUtil {
         }
 
         String filePath = file.getPath();
-        System.out.println("文件名字   :" + file.getName());
+//        System.out.println("文件名字   :" + file.getName());
 
         return !filePath.contains("R$") &&
                 !filePath.contains("R.class") &&

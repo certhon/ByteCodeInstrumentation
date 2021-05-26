@@ -1,4 +1,4 @@
 package com.example.bytecodeinstrumentation.javassit;
 
-public class StatisticsTime {
-}
+//public class StatisticsTime {
+//}

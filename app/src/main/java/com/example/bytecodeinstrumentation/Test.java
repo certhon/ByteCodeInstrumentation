@@ -13,12 +13,10 @@ public class Test {
     //测试方法耗时
     @MethodCost
     public void test(){
-        System.out.println("开始执行测试方法的代码");
         try {
-            Thread.sleep(10);//模拟耗时操作
+            Thread.sleep(5);//模拟耗时操作
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("执行结束测试方法的代码");
     }
 }

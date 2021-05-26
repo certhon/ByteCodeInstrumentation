@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
+import javassist.CannotCompileException;
 import javassist.NotFoundException;
 
 /**
@@ -67,30 +68,34 @@ public class ClassTransform extends Transform {
         System.out.println("---- transform start ----");
         inject = CostExtension.checkInject(mProject);
         System.out.println("injectCost = "+inject);
-        Iterator<TransformInput> iterator = transformInvocation.getInputs().iterator();
+//        TransformInput有两种类型 一种目录  一种jar  需要分开遍历
+//
+        Iterator<TransformInput> inputIterator = transformInvocation.getInputs().iterator();
         System.out.println("文件数量 = "+transformInvocation.getInputs().size());
 
-        // 输出集合中的所有元素
-        while (iterator.hasNext()) {
-            TransformInput input = iterator.next();
+//          1.拿到输入路径
+        while (inputIterator.hasNext()) {
+            TransformInput input = inputIterator.next();
             Iterator<DirectoryInput> directoryInputIterator = input.getDirectoryInputs().iterator();
             while (directoryInputIterator.hasNext()) {
                 DirectoryInput directoryInput = directoryInputIterator.next();
                 System.out.println("输入文件名 = "+directoryInput.getName());
                 if (inject) {
                     try {
+//          2. 处理要插入代码的文件
                         InjectUtil.injectCost(directoryInput.getFile(), mProject);
                     } catch (NotFoundException e) {
                         e.printStackTrace();
+                    } catch (CannotCompileException e) {
+                        e.printStackTrace();
                     }
                 }
-                // 将input的目录复制到output指定目录 否则运行时会报ClassNotFound异常
+//          3.将input的目录复制到output指定目录 否则运行时会报ClassNotFound异常
                 File contentLocation = transformInvocation.getOutputProvider().getContentLocation(directoryInput.getName(), directoryInput.getContentTypes(),
                         directoryInput.getScopes(), Format.DIRECTORY);
                 FileUtils.copyDirectory(directoryInput.getFile(), contentLocation);
 
             }
-
             //不处理jar文件
             Iterator<JarInput> jarIterator1 = input.getJarInputs().iterator();
             while (jarIterator1.hasNext()) {
